@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: redmine-db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: always
+
+  redmine1:
+    build:
+      context: ./redmine
+      dockerfile: Dockerfile
+    container_name: redmine-1
+    depends_on:
+      - db
+    ports:
+      - "3001:3000"
+    volumes:
+      - redmine-files:/usr/src/redmine/files
+    restart: always
+
+  redmine2:
+    build:
+      context: ./redmine
+      dockerfile: Dockerfile
+    container_name: redmine-2
+    depends_on:
+      - db
+    ports:
+      - "3002:3000"
+    volumes:
+      - redmine-files:/usr/src/redmine/files
+    restart: always
+
+volumes:
+  db-data:
+  redmine-files:
