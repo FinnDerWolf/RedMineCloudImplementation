@@ -1,41 +1,16 @@
-####################################
-# OpenStack Provider Credentials
-####################################
-auth_url = "https://openstack.example.com:5000/v3"
-project  = "redmine-project"
-user     = "terraform-user"
-password = "SUPER_SECRET_PASSWORD"
+auth_url = ""
+project  = ""
+user     = ""
+password = ""
 region   = "RegionOne"
 
-####################################
-# Network
-####################################
-network_name = "redmine-net"
-subnet_cidr  = "192.168.100.0/24"
+network_name = "CloudServ1-net"
+subnet_cidr  = "192.168.0.0/24"
 
-####################################
-# Security Group
-####################################
-sg_name = "redmine-k8s-sg"
+image_id     = "a482ee88-3671-4aa7-99b6-4c2e485d41fd"
 
-allowed_ports = [
-  22,     # SSH
-  80,     # HTTP
-  443,    # HTTPS
-  6443,   # Kubernetes API
-  30000,  # NodePort range start (optional)
-  32767  # NodePort range end (optional)
-]
+redmine_flavor = "m1.medium"
+db_flavor      = "m1.small"
 
-####################################
-# Compute / Kubernetes Nodes
-####################################
-vm_count    = 3
-vm_flavor   = "m1.medium"
-image_name  = "Ubuntu 22.04"
-volume_size = 20   # GB
-
-####################################
-# Floating IP
-####################################
-fip_pool = "public"
+redmine_volume_size = 20
+db_volume_size      = 20
