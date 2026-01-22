@@ -1,0 +1,41 @@
+####################################
+# OpenStack Provider Credentials
+####################################
+auth_url = "https://openstack.example.com:5000/v3"
+project  = "redmine-project"
+user     = "terraform-user"
+password = "SUPER_SECRET_PASSWORD"
+region   = "RegionOne"
+
+####################################
+# Network
+####################################
+network_name = "redmine-net"
+subnet_cidr  = "192.168.100.0/24"
+
+####################################
+# Security Group
+####################################
+sg_name = "redmine-k8s-sg"
+
+allowed_ports = [
+  22,     # SSH
+  80,     # HTTP
+  443,    # HTTPS
+  6443,   # Kubernetes API
+  30000,  # NodePort range start (optional)
+  32767  # NodePort range end (optional)
+]
+
+####################################
+# Compute / Kubernetes Nodes
+####################################
+vm_count    = 3
+vm_flavor   = "m1.medium"
+image_name  = "Ubuntu 22.04"
+volume_size = 20   # GB
+
+####################################
+# Floating IP
+####################################
+fip_pool = "public"
