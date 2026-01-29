@@ -1,16 +1,25 @@
-auth_url = ""
-project  = ""
-user     = ""
-password = ""
+auth_url = "" #Addresse von OpenStack
+project  = "" Unser Gruppenname
+user     = "" Unser Gruppenname
+password = "" Unser Passwort
 region   = "RegionOne"
 
-network_name = "CloudServ1-net"
-subnet_cidr  = "192.168.0.0/24"
+network_name = "CloudServ1-net-redmine"
+subnet_cidr  = "192.168.11.0/24" Private IPs für die Worker
 
 image_id     = "a482ee88-3671-4aa7-99b6-4c2e485d41fd"
 
-redmine_flavor = "m1.medium"
-db_flavor      = "m1.small"
+worker_flavor = "m1.medium"
+server_flavor = "m1.medium"
 
-redmine_volume_size = 20
-db_volume_size      = 20
+worker_volume_size = 20
+server_volume_size = 30
+
+external_network_name = "ext_net"
+
+existing_router_id = "d6e23175-df87-43c0-af0e-b41fd7672473"
+
+uni_vpn_cidr = "10.0.0.0/8"
+
+ssh_public_key_path = "C:/Users/<user>/.ssh/id_ed25519.pub"
+#ssh_public_key_path = "/home/<user>/.ssh/id_ed25519.pub"

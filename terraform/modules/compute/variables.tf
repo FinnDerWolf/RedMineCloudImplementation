@@ -6,7 +6,19 @@ variable "network_id" {}
 variable "image_id" {
   type = string
 }
-variable "security_groups" {
+variable "security_group_ids" {
   type = list(string)
 }
+
 variable "volume_size" {}
+
+variable "subnet_id" {
+  type = string
+}
+
+variable "keypair_name" {
+  type = string
+}
+
+
+

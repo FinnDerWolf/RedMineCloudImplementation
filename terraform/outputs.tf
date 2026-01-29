@@ -1,7 +1,12 @@
-output "redmine_private_ips" {
-  value = module.redmine.private_ips
+output "control_plane_floating_ip" {
+  value = openstack_networking_floatingip_v2.control_fip.address
 }
 
-output "db_private_ips" {
-  value = module.database.private_ips
+output "control_plane_private_ip" {
+  value = module.control_plane.private_ips[0]
 }
+
+output "worker_private_ips" {
+  value = module.workers.private_ips
+}
+
