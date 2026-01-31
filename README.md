@@ -18,5 +18,40 @@
 
 
     terraform destroy
-    
+
 ## Kubernetes
+    vorläufige Anleitung zum starten:
+    ssh ubuntu@<CONTROL_PLANE_FLOATING_IP>
+
+    git clone <REPO_URL> Redmine
+    cd Redmine
+
+    cd k8s2/cluster
+    chmod +x install-k3s-server.sh
+    ./install-k3s-server.sh <CONTROL_PLANE_FLOATING_IP>
+
+    sudo cat /var/lib/rancher/k3s/server/node-token
+    Token kopieren
+
+    per ssh jump auf worker
+    ssh -J ubuntu@<CONTROL_PLANE_FLOATING_IP> ubuntu@<WORKER_PRIVATE_IP>
+
+    git clone <REPO_URL> Redmine
+    cd Redmine
+
+    cd k8s22/cluster
+    chmod +x install-k3s-agent.sh
+    ./install-k3s-agent.sh <CONTROL_PLANE_PRIVATE_IP> TOKEN
+
+    AUF ALLEN 3 WORKERN MACHEN
+
+    Cluster auf der conntrol plane prüfen
+    sudo k3s kubectl get nodes -o wide
+
+    Deploy (wegen kubectl müssen im zweifesfall noch rechte gesetzt werden)
+    kubectl apply -k k8s/apps/redmine/base
+    kubectl -n redmine get pods -w
+
+    im Browser
+    http://<CONTROL_PLANE_FLOATING_IP>:30080
+    
