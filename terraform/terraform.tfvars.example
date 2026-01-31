@@ -23,3 +23,5 @@ uni_vpn_cidr = "10.0.0.0/8"
 
 ssh_public_key_path = "C:/Users/<user>/.ssh/id_ed25519.pub"
 #ssh_public_key_path = "/home/<user>/.ssh/id_ed25519.pub"
+
+dns_nameservers = ["10.33.16.100", "1.1.1.1"]

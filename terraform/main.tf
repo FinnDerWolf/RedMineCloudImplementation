@@ -18,13 +18,14 @@ provider "openstack" {
 }
 
 module "network" {
-  source       = "./modules/network"
-  network_name = var.network_name
-  subnet_cidr  = var.subnet_cidr
-  providers = {
-    openstack = openstack
-  }
+  source          = "./modules/network"
+  network_name    = var.network_name
+  subnet_cidr     = var.subnet_cidr
+  dns_nameservers = var.dns_nameservers
+
+  providers = { openstack = openstack }
 }
+
 
 module "security_k8s_internal" {
   source        = "./modules/security"
