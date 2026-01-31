@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: redmine
+
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - postgres-service.yaml
+  - postgres-statefulset.yaml
+  - redmine-service.yaml
+  - redmine-deployment.yaml
+  - redmine-nodeport.yaml

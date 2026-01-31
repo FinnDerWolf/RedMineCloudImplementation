@@ -18,7 +18,5 @@
 
 
     terraform destroy
-
-
-
+    
 ## Kubernetes
