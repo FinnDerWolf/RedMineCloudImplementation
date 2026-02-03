@@ -28,7 +28,7 @@ fi
 cd "$DEST_DIR"
 
 echo "==> Wende Kubernetes manifests an"
-./k8s2/scripts/apply-redmine.sh "$OVERLAY"
+sudo k3s kubectl apply -k "k8s2/apps/redmine/overlays/$OVERLAY"
 
 echo "==> Cluster Status"
 ./k8s2/scripts/cluster-status.sh
