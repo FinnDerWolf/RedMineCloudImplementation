@@ -38,7 +38,7 @@ module "security_k8s_internal" {
 module "security_controlplane_public" {
   source        = "./modules/security"
   sg_name       = "k8s-controlplane-public-sg"
-  allowed_ports = [22, 30080]         # + Redmine NodePort
+  allowed_ports = [22, 80, 443]         
   remote_cidr   = var.uni_vpn_cidr
   providers = { openstack = openstack }
 }
