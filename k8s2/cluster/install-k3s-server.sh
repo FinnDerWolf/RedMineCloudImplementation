@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#   ./install-k3s-server.sh <FLOATING_IP> [--disable-traefik]
+#   ./install-k3s-server.sh <FLOATING_IP> 
 #
 #   ./install-k3s-server.sh 203.0.113.10
-#   ./install-k3s-server.sh 203.0.113.10 --disable-traefik
 
 FLOATING_IP="${1:-}"
 DISABLE_TRAEFIK="${2:-}"
