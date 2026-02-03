@@ -10,4 +10,4 @@ resources:
   - postgres-statefulset.yaml
   - redmine-service.yaml
   - redmine-deployment.yaml
-  - redmine-nodeport.yaml
+#  - redmine-nodeport.yaml

@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - redmine-ingress.yaml
 
 patches:
   - path: patch-replicas.yaml
