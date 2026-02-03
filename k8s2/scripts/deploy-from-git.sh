@@ -5,7 +5,7 @@ set -euo pipefail
 GIT_REPO="https://github.com/FinnDerWolf/RedMineCloudImplementation.git"
 
 BRANCH="${BRANCH:-main}"
-DEST_DIR="${DEST_DIR:-$HOME/redmine-deploy}"
+DEST_DIR="${DEST_DIR:-$HOME/Redmine}"
 OVERLAY="${OVERLAY:-production}"
 ### ====================== ###
 
