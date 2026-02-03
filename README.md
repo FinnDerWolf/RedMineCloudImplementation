@@ -27,7 +27,7 @@
         chmod +x k8s2/cluster/join-workers.sh
     
     2. k3s Server installieren (auf PC ausführen)
-        ssh ubuntu@<CONTROL_PLANE_FLOATING_IP> "sudo bash -s" < k8s2/cluster install-k3s-server.sh <CONTROL_PLANE_FLOATING_IP>
+        ssh ubuntu@<CONTROL_PLANE_FLOATING_IP> "sudo bash -s" < k8s2/cluster/install-k3s-server.sh <CONTROL_PLANE_FLOATING_IP>
 
     3. Traefik hostPort Config aus Repo auf Control-Plane kopieren (auf PC ausführen)
         scp k8s2/cluster/traefik-hostport.yaml ubuntu@<CONTROL_PLANE_FLOATING_IP>:/tmp/traefik-config.yaml
@@ -44,7 +44,7 @@
 
         chmod +x k8s2/scripts/deploy-from-git.sh
 
-        export OVERLAY=production && ./k8s2/scripts/deploy-from-git.sh
+        export OVERLAY=production BRANCH=feature/kubernetesTest && ./k8s2/scripts/deploy-from-git.sh
 
     6. Worker joinen (von PC aus)
         ./k8s2/cluster/join-workers.sh --server ubuntu@<CONTROL_PLANE_FLOATING_IP> --workers "ubuntu@<WORKER_PRIVATE_IP_1> ubuntu@<WORKER_PRIVATE_IP_2> ubuntu@<WORKER_PRIVATE_IP_3>"
