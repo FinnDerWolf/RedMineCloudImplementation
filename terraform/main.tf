@@ -82,6 +82,10 @@ module "workers" {
   security_group_ids  = [module.security_k8s_internal.sg_id]
 }
 
+module "monitoring" {
+  source = "./modules/monitoring"
+}
+
 resource "openstack_networking_router_interface_v2" "router_if" {
   router_id = var.existing_router_id
   subnet_id = module.network.subnet_id

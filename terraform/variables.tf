@@ -46,4 +46,3 @@ variable "dns_nameservers" {
   default     = ["10.33.16.100", "1.1.1.1"]
 }
 
-
