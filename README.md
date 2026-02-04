@@ -57,7 +57,7 @@
 
 
     für loadtest k6 installieren
-    BASE_URL=<CONTROL_PLANE_IP> k6 run loadtest/k6/redmine.js
+    BASE_URL=http://<CONTROL_PLANE_IP> k6 run loadtest/k6/redmine.js
 
     oder auf windows
 
