@@ -5,6 +5,7 @@ namespace: redmine
 resources:
   - ../../base
   - redmine-ingress.yaml
+  - redmine-hpa.yaml
 
 patches:
   - path: patch-replicas.yaml

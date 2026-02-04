@@ -54,4 +54,18 @@
 
     8. Zugriff testen (im Browser)
         http://<CONTROL_PLANE_FLOATING_IP>/
+
+
+    für loadtest k6 installieren
+    BASE_URL=<CONTROL_PLANE_IP> k6 run loadtest/k6/redmine.js
+
+    oder auf windows
+
+    set BASE_URL=<CONTROL_PLANE_IP>
+    k6 run loadtest/k6/redmine.js
+
+
+    sudo k3s kubectl -n redmine get hpa -w
+    sudo k3s kubectl -n redmine get pods -w
+    sudo k3s kubectl top pods -n redmine
     
