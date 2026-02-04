@@ -61,7 +61,7 @@
 
     oder auf windows
 
-    set BASE_URL=<CONTROL_PLANE_IP>
+    set BASE_URL=http://<CONTROL_PLANE_IP>
     k6 run loadtest/k6/redmine.js
 
 
