@@ -11,9 +11,9 @@
 
     terraform apply
 
-    floating ip der control-plane wird in der konsole ausgegeben.
+    floating ip der control-plane und private ips der worker werden in der konsole ausgegeben.
     zugriff auf control-plane: ssh -i C:\Users\ #user#\ .ssh\id_ed25519 ubuntu@floating-ip (Leerzeichen vor username und .ssh muss weg. wegen formatierung)
-    um auf die worker zu kommen: ssh jump -> ssh -J ubuntu@floating-ip ubuntu@privateInstanzIp 
+    um auf die worker zu kommen: ssh jump -> ssh -J ubuntu@floating-ip ubuntu@privateInstanzIp (Ist durch die Nutzung der Skripte nicht mehr nötig)
 
 
 
