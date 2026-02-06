@@ -7,9 +7,6 @@ resource "helm_release" "kube_prometheus_stack" {
 
   create_namespace = true
 
-  values = [
-    file("${path.module}/values.yaml")
-  ]
 
   timeout = 600
 }

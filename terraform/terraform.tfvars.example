@@ -1,11 +1,11 @@
 auth_url = "" #Addresse von OpenStack
-project  = "" Unser Gruppenname
-user     = "" Unser Gruppenname
-password = "" Unser Passwort
+project  = "" #Unser Gruppenname
+user     = "" #Unser Gruppenname
+password = "" #Unser Passwort
 region   = "RegionOne"
 
 network_name = "CloudServ1-net-redmine"
-subnet_cidr  = "192.168.11.0/24" Private IPs für die Worker
+subnet_cidr  = "192.168.11.0/24" #Private IPs für die Worker
 
 image_id     = "a482ee88-3671-4aa7-99b6-4c2e485d41fd"
 
