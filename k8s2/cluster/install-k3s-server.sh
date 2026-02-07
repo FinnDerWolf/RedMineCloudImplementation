@@ -19,7 +19,7 @@ if [[ -z "$NODE_IP" ]]; then
   exit 1
 fi
 
-INSTALL_ARGS=(server "--node-ip=${NODE_IP}" "--tls-san=${FLOATING_IP}")
+INSTALL_ARGS=(server "--node-ip=${NODE_IP}" "--tls-san=${FLOATING_IP}" "--write-kubeconfig-mode=644")
 
 if [[ "${DISABLE_TRAEFIK}" == "--disable-traefik" ]]; then
   INSTALL_ARGS+=("--disable" "traefik")
