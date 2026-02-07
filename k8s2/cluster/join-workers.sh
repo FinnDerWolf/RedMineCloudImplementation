@@ -41,7 +41,7 @@ echo "==> Joining workers via jump host: $SERVER"
 
 for W in $WORKERS; do
   echo "==> Joining worker $W (durch jump host)"
-  ssh ${SSH_OPTS} -J "$SERVER" "$W" \
+  ssh -o StrictHostKeyChecking=no ${SSH_OPTS} -J "$SERVER" "$W" \
     "curl -sfL https://get.k3s.io | K3S_URL=https://$SERVER_IP:6443 K3S_TOKEN=$TOKEN sh -"
 done
 
