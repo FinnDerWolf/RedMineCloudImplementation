@@ -7,21 +7,61 @@
 
 set -euo pipefail
 
+# helper functions
+wait_for_ssh() {
+  HOST="$1"
+  USER="${2:-ubuntu}"
+
+  echo "Waiting for SSH on $USER@$HOST"
+
+  for i in {1..30}; do
+    if ssh -o StrictHostKeyChecking=no \
+           -o BatchMode=yes \
+           -o ConnectTimeout=3 \
+           "$USER@$HOST" "echo ok" >/dev/null 2>&1; then
+      echo "SSH available on $HOST"
+      return 0
+    fi
+    sleep 5
+  done
+
+  echo "SSH not reachable on $HOST"
+  exit 1
+}
+
+wait_for_namespace() {
+  HOST="$1"
+  NAMESPACE="$2"
+  USER="${3:-ubuntu}"
+
+  echo "Waiting for namespace '$NAMESPACE'"
+
+  for i in {1..30}; do
+    if ssh -o StrictHostKeyChecking=no "$USER@$HOST" \
+      "sudo k3s kubectl get ns $NAMESPACE" >/dev/null 2>&1; then
+      echo "Namespace '$NAMESPACE' found"
+      return 0
+    fi
+    sleep 5
+  done
+
+  echo "Namespace '$NAMESPACE' not found"
+  exit 1
+}
+
 # terraform for application infrastructure
-cd "terraform"
+cd terraform
 terraform init
 terraform apply -auto-approve
 
-# get output variables from terraform
 CONTROL_PLANE_FLOATING_IP=$(terraform output -raw control_plane_floating_ip)
 CONTROL_PLANE_PRIVATE_IP=$(terraform output -raw control_plane_private_ip)
 WORKER_PRIVATE_IPS=$(terraform output -json worker_private_ips | grep -oE '"[^"]+"' | tr -d '"' )
 
 echo "Control Plane Floating IP: $CONTROL_PLANE_FLOATING_IP"
 echo "Control Plane Private IP:  $CONTROL_PLANE_PRIVATE_IP"
-
 for ip in $WORKER_PRIVATE_IPS; do
-  echo "Worker: $ip"
+  echo "Worker IP: $ip"
 done
 
 cd ..
@@ -31,38 +71,48 @@ cd ..
 chmod +x k8s2/cluster/install-k3s-server.sh
 chmod +x k8s2/cluster/join-workers.sh
 
+# wait for control plane node
+wait_for_ssh "$CONTROL_PLANE_FLOATING_IP"
+
 # install k3s server on control plane node
-ssh ubuntu@$CONTROL_PLANE_FLOATING_IP "sudo bash -s" < k8s2/cluster/install-k3s-server.sh $CONTROL_PLANE_FLOATING_IP
+ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" \
+  "sudo bash -s" < k8s2/cluster/install-k3s-server.sh "$CONTROL_PLANE_FLOATING_IP"
 
-#Traefik hostPort Config aus Repo auf Control-Plane kopieren
-scp k8s2/cluster/traefik-hostport.yaml ubuntu@$CONTROL_PLANE_FLOATING_IP:/tmp/traefik-config.yaml
-ssh ubuntu@$CONTROL_PLANE_FLOATING_IP "sudo mv /tmp/traefik-config.yaml /var/lib/rancher/k3s/server/manifests/traefik-config.yaml"
+# wait again in case of reboot
+wait_for_ssh "$CONTROL_PLANE_FLOATING_IP"
 
-# Deploye aus dem Git Repository auf Control Plane Noden und wende Kubernetes Manifeste an
-ssh ubuntu@$CONTROL_PLANE_FLOATING_IP <<'EOF'
+# traefik hostPort config
+scp -o StrictHostKeyChecking=no \
+  k8s2/cluster/traefik-hostport.yaml \
+  ubuntu@"$CONTROL_PLANE_FLOATING_IP":/tmp/traefik-config.yaml
+
+ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" \
+  "sudo mv /tmp/traefik-config.yaml /var/lib/rancher/k3s/server/manifests/traefik-config.yaml"
+
+
+# deploy from git repository on control plane
+ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" <<'EOF'
 set -e
 
-# Repo klonen (nur falls noch nicht vorhanden)
 if [ ! -d "$HOME/Redmine" ]; then
   git clone https://github.com/FinnDerWolf/RedMineCloudImplementation.git "$HOME/Redmine"
 fi
 
 cd "$HOME/Redmine"
 
-# Richtigen Branch auschecken
 git fetch
-git switch monitoringTest
+git pull
+git switch main
+
 ls -l
 
-# Deploy-Script ausführbar machen
 chmod +x k8s2/scripts/deploy-from-git.sh
 
-# Deployment starten
 export OVERLAY=production
 ./k8s2/scripts/deploy-from-git.sh
 EOF
 
-# Worker joinen und in k3s Cluster integrieren
+# join workers
 WORKER_SSH_TARGETS=""
 for ip in $WORKER_PRIVATE_IPS; do
   WORKER_SSH_TARGETS="$WORKER_SSH_TARGETS ubuntu@$ip"
@@ -72,11 +122,12 @@ done
   --server "ubuntu@$CONTROL_PLANE_FLOATING_IP" \
   --workers "$WORKER_SSH_TARGETS"
 
-# Deployment neustarten, um Pods auf worker zu verteilen
-ssh ubuntu@$CONTROL_PLANE_FLOATING_IP "sudo k3s kubectl -n redmine rollout restart deployment redmine"
+# wait for kubernetes state and restart deployment
+wait_for_namespace "$CONTROL_PLANE_FLOATING_IP" "redmine"
 
-echo "Redmine Adresse: https://$CONTROL_PLANE_FLOATING_IP"
+ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" \
+  "sudo k3s kubectl -n redmine rollout restart deployment redmine"
 
 
-
-
+echo "Deployment finished"
+echo "Redmine address: http://$CONTROL_PLANE_FLOATING_IP"
