@@ -35,6 +35,6 @@ For help please contact finn-liam.wolf@informatik.hs-fulda.de
 
 ## Authors
 
-Finn Wolf (finn-liam.wolf@informatik.hs-fulda.de)
-Wilhelm
-Alan
+- Finn Wolf (finn-liam.wolf@informatik.hs-fulda.de)
+- Wilhelm
+- Alan
