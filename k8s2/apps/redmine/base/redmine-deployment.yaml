@@ -35,6 +35,11 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: redmine-secret   
+                  key: SECRET_KEY_BASE
           readinessProbe:
             httpGet:
               path: /login
