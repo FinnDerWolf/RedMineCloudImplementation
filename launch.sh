@@ -133,8 +133,7 @@ echo "Redmine Deployment finished"
 
 # terraform für Monitoring Infrastruktur
 chmod +x deployMonitoring.sh
-#./deployMonitoring.sh
-
+./deployMonitoring.sh "$CONTROL_PLANE_FLOATING_IP"
 
 
 echo "Deployment finished"
