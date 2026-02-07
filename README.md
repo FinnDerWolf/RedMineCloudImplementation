@@ -12,11 +12,24 @@ This project aims to implement the open source version control software redmine 
 
 - eduVPN
 - terraform
+- git
 - bash
 
 ### Installing
 
-Clone the repo using https or ssh.
+1. Clone the repo using https or ssh.
+2. Create ssh key using a terminal of your choice:
+    - Windows: ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\id_ed25519 -C "uni-k8s"
+    - Linux/macOS: ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "uni-k8s"
+3. Create your local terraform.tfvars by executing the following commands:
+    - cd terraform
+    - terraform.tfvars.example umbenenen:
+        - Windows (PowerShell): Rename-Item terraform.tfvars.example terraform.tfvars
+        - Linux/macOS: mv terraform.tfvars.example terraform.tfvars
+    - open the terraform.tfvars using an editor like nano:
+        - nano terraform.tfvars
+    - Fill the five empty variables at the top as described by the comments 
+    - Save and close the buffer
 
 ### Executing program
 1. Connect to the Hochschule Fulda Network using "eduVPN"
@@ -25,7 +38,7 @@ Clone the repo using https or ssh.
     - chmod +x launch.sh
     - ./launch.sh
     - If demanded, confirm all ssh fingerprints by typing "yes"
-3. Reset the OpenStack infrastructure by executing the following commands:
+3. When finished, destroy the OpenStack infrastructure by executing the following commands:
     - cd terraform
     - terraform destroy
 
