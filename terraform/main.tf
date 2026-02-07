@@ -38,11 +38,11 @@ module "security_k8s_internal" {
 module "security_controlplane_public" {
   source        = "./modules/security"
   sg_name       = "k8s-controlplane-public-sg"
-  allowed_ports = [22, 80, 443]         
+  allowed_ports = [22, 80, 443, 6443]  # SSH + HTTP/S + Kubernetes API 
   remote_cidr   = var.uni_vpn_cidr
   providers = { openstack = openstack }
 }
-###
+
 resource "openstack_networking_secgroup_rule_v2" "k8s_internal_allow_all_ingress" {
   direction         = "ingress"
   ethertype         = "IPv4"
@@ -50,7 +50,7 @@ resource "openstack_networking_secgroup_rule_v2" "k8s_internal_allow_all_ingress
   remote_ip_prefix  = var.subnet_cidr
   security_group_id = module.security_k8s_internal.sg_id
 }
-###
+
 module "control_plane" {
   source = "./modules/compute"
 

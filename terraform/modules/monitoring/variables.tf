@@ -9,3 +9,8 @@ variable "chart_version" {
   type        = string
   default     = "56.6.0"
 }
+
+variable "kubeconfig_path" {
+  type    = string
+  default = "~/.kube/config"
+}

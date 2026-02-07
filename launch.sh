@@ -128,6 +128,14 @@ wait_for_namespace "$CONTROL_PLANE_FLOATING_IP" "redmine"
 ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" \
   "sudo k3s kubectl -n redmine rollout restart deployment redmine"
 
+echo "Redmine Deployment finished"
+
+
+# terraform für Monitoring Infrastruktur
+chmod +x deployMonitoring.sh
+#./deployMonitoring.sh
+
+
 
 echo "Deployment finished"
 echo "Redmine address: http://$CONTROL_PLANE_FLOATING_IP"
