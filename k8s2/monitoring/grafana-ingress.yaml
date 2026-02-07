@@ -4,12 +4,11 @@ metadata:
   name: grafana
   namespace: monitoring
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.entrypoints: grafana
 spec:
   ingressClassName: traefik
   rules:
-    - host: grafana.local
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix

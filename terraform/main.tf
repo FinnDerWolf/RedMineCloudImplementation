@@ -38,7 +38,7 @@ module "security_k8s_internal" {
 module "security_controlplane_public" {
   source        = "./modules/security"
   sg_name       = "k8s-controlplane-public-sg"
-  allowed_ports = [22, 80, 443, 6443]  # SSH + HTTP/S + Kubernetes API 
+  allowed_ports = [22, 80, 443, 3000, 6443]  # SSH + HTTP/S + Grafana + Kubernetes API 
   remote_cidr   = var.uni_vpn_cidr
   providers = { openstack = openstack }
 }

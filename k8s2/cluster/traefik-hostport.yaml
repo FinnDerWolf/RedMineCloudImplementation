@@ -15,6 +15,10 @@ spec:
       websecure:
         port: 443
         hostPort: 443
+      grafana:
+        port: 3000
+        hostPort: 3000
+      
 
     service:
       type: ClusterIP
