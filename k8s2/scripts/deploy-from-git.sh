@@ -32,6 +32,7 @@ ls -l
 sudo k3s kubectl apply -k "k8s2/apps/redmine/overlays/$OVERLAY"
 
 echo "==> Cluster Status"
+chmod +x k8s2/scripts/cluster-status.sh
 ./k8s2/scripts/cluster-status.sh
 
 echo "==> Deployment fertig"
