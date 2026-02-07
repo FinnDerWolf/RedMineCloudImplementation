@@ -1,0 +1,20 @@
+resources:
+  - namespace.yaml
+  - service-monitors.yaml
+  - grafana-dashboards.yaml
+
+helmCharts:
+  - name: prometheus
+    repo: https://prometheus-community.github.io/helm-charts
+    version: "25.21.0"
+    releaseName: prometheus
+    namespace: monitoring
+    valuesInline: {}
+  - name: grafana
+    repo: https://grafana.github.io/helm-charts
+    version: "7.3.9"
+    releaseName: grafana
+    namespace: monitoring
+    valuesInline:
+      dashboardsConfigMaps:
+        - grafana-dashboards

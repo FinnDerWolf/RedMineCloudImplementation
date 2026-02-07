@@ -40,4 +40,9 @@ variable "ssh_public_key_path" {
   type = string
 }
 
+variable "dns_nameservers" {
+  type        = list(string)
+  description = "DNS servers for the subnet (Neutron DHCP)"
+  default     = ["10.33.16.100", "1.1.1.1"]
+}
 
