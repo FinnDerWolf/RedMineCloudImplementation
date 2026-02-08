@@ -63,12 +63,14 @@ For load testing follow these steps:
 1. Run in root directroy of the project:
    
     Linux: BASE_URL=http://<CONTROL_PLANE_FLOATING_IP> k6 run loadtest/k6/redmine.js
-    
+
     Windows: set BASE_URL=http://<CONTROL_PLANE_FLOATING_IP>
              k6 run loadtest\k6\redmine.js
 
 2. Watch on the control plane:
+   
     sudo k3s kubectl -n redmine get pods -w
+
     sudo k3s kubectl -n redmine get hpa -w
 
 ## Disclaimer
