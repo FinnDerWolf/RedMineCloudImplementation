@@ -1,0 +1,125 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup-to-github
+spec:
+  # Alle 10 Minuten (Demo/Uni). In echt eher 1x täglich oder stündlich.
+  schedule: "*/10 * * * *"
+
+  # verhindert parallele Backups (Race Conditions + unnötige Last)
+  concurrencyPolicy: Forbid
+
+  # wenn ein Run verpasst wird (Node down), nicht ewig "nachholen"
+  startingDeadlineSeconds: 120
+
+  # History klein halten
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+    spec:
+      # Timeout (Job darf nicht ewig hängen)
+      activeDeadlineSeconds: 600
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: postgres:16
+              env:
+                # GitHub Repo Ziel
+                - name: OWNER
+                  value: "Welkor14"
+                - name: REPO
+                  value: "uni-db-backup"
+                - name: PATH_IN_REPO
+                  value: "backup/latest.sql.gz"
+                - name: BRANCH
+                  value: "main"
+
+                # GitHub Token (kommt aus Secret, das launch.sh erstellt)
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-token
+                      key: token
+
+                # Postgres Zugangsdaten (aus postgres-secret)
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_DB
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_USER
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_PASSWORD
+
+              command: ["bash", "-ceu"]
+              args:
+                - |
+                  set -euo pipefail
+
+                  apt-get update >/dev/null
+                  apt-get install -y --no-install-recommends curl jq ca-certificates >/dev/null
+
+                  # warten bis Postgres wirklich erreichbar ist
+                  echo "Waiting for Postgres..."
+                  for i in $(seq 1 60); do
+                    pg_isready -h postgres -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" && break
+                    sleep 2
+                  done
+                  pg_isready -h postgres -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"
+
+                  # DB Dump erstellen und komprimieren
+                  echo "Creating postgres dump..."
+                  pg_dump -h postgres -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
+                    | gzip -9 > /tmp/latest.sql.gz
+
+                  # Backup validieren 
+                  test -s /tmp/latest.sql.gz
+                  gzip -t /tmp/latest.sql.gz
+
+                  # GitHub "contents" API Upload benötigt Base64
+                  b64="$(base64 -w 0 /tmp/latest.sql.gz)"
+                  api="https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH_IN_REPO}"
+
+                  # SHA holen, falls Datei schon existiert (für Update notwendig)
+                  sha="$(curl -fsSL \
+                    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                    -H "Accept: application/vnd.github+json" \
+                    "${api}?ref=${BRANCH}" | jq -r '.sha // empty' || true)"
+
+                  msg="Update postgres backup (cronjob)"
+
+                  # Payload abhängig davon, ob Datei existiert (sha) oder neu angelegt wird
+                  if [ -n "$sha" ]; then
+                    payload="$(jq -n \
+                      --arg message "$msg" \
+                      --arg content "$b64" \
+                      --arg branch "$BRANCH" \
+                      --arg sha "$sha" \
+                      '{message:$message, content:$content, branch:$branch, sha:$sha}')"
+                  else
+                    payload="$(jq -n \
+                      --arg message "$msg" \
+                      --arg content "$b64" \
+                      --arg branch "$BRANCH" \
+                      '{message:$message, content:$content, branch:$branch}')"
+                  fi
+
+                  # Upload / Update in GitHub
+                  curl -fsSL -X PUT \
+                    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                    -H "Accept: application/vnd.github+json" \
+                    "$api" \
+                    -d "$payload" >/dev/null
+
+                  echo "Backup uploaded successfully"

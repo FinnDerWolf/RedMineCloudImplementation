@@ -89,10 +89,22 @@ scp -o StrictHostKeyChecking=no \
 ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" \
   "sudo mv /tmp/traefik-config.yaml /var/lib/rancher/k3s/server/manifests/traefik-config.yaml"
 
+# GitHub Token lokal abfragen (wird NICHT in YAML/Git gespeichert)
+echo
+read -s -p "GitHub Token (for DB backup/restore): " GITHUB_TOKEN
+echo
+if [ -z "${GITHUB_TOKEN}" ]; then
+  echo "WARN: Kein Token eingegeben."
+  echo "GitHub Backup/Restore wird nicht funktionieren."
+  echo "Restore wird aber nicht blockieren, weil initContainer 'skippt' wenn kein Backup existiert."
+fi
 
 # deploy from git repository on control plane
-ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" <<'EOF'
-set -e
+ssh -o StrictHostKeyChecking=no ubuntu@"$CONTROL_PLANE_FLOATING_IP" \
+  "bash -s" -- "$GITHUB_TOKEN" <<'EOF'
+set -euo pipefail
+
+GH_TOKEN="${1:-}"
 
 if [ ! -d "$HOME/Redmine" ]; then
   git clone https://github.com/FinnDerWolf/RedMineCloudImplementation.git "$HOME/Redmine"
@@ -107,6 +119,22 @@ git switch main
 ls -l
 
 chmod +x k8s2/scripts/deploy-from-git.sh
+
+# Secret anlegen/ersetzen, BEVOR Workloads (Postgres/CronJob) deployed werden.
+# initContainer im Postgres-Pod braucht github-token, um Backup zu laden
+# CronJob braucht github-token, um Backup hochzuladen
+# Ohne Secret kann es zu Init-Errors oder Job-Fails kommen
+
+if [ -n "$GH_TOKEN" ]; then
+  echo "Creating/updating github-token secret in namespace redmine..."
+  sudo k3s kubectl create namespace redmine >/dev/null 2>&1 || true
+
+  sudo k3s kubectl -n redmine delete secret github-token --ignore-not-found >/dev/null 2>&1 || true
+  sudo k3s kubectl -n redmine create secret generic github-token \
+    --from-literal=token="$GH_TOKEN"
+else
+  echo "No GH token provided -> github-token secret NOT created (backup/restore disabled)."
+fi
 
 export OVERLAY=production
 ./k8s2/scripts/deploy-from-git.sh

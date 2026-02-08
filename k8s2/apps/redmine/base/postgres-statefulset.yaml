@@ -13,17 +13,99 @@ spec:
       labels:
         app: postgres
     spec:
+      # init container: restore from github
+      # initContainer läuft VOR Postgres
+      # Restore wird NUR versucht, wenn DB frisch ist (PG_VERSION fehlt)
+      # Wenn KEIN Backup in GitHub existiert → Restore wird SKIPPED
+      # Postgres startet dann als leere DB 
+      initContainers:
+        - name: restore-from-github
+          image: alpine:3.20
+          env:
+            # GitHub Token als Kubernetes Secret
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: token
+            - name: OWNER
+              value: "Welkor14"
+            - name: REPO
+              value: "uni-db-backup"
+            - name: PATH_IN_REPO
+              value: "backup/latest.sql.gz"
+          command: ["sh", "-ceu"]
+          args:
+            - |
+              apk add --no-cache curl ca-certificates jq
+
+              # Wenn Postgres-Datenverzeichnis bereits initialisiert ist,
+              # nicht restoren (Schutz vor Überschreiben).
+              if [ -f /var/lib/postgresql/data/PG_VERSION ]; then
+                echo "Database already initialized -> skipping restore."
+                exit 0
+              fi
+
+              echo "Fresh database detected -> trying to download backup from GitHub"
+
+              api="https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH_IN_REPO}"
+
+              # curl darf fehlschlagen, wir skippen dann Restore
+              # (z.B. wenn Datei nicht existiert oder Token fehlt)
+              json="$(curl -sSL \
+                -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                "$api" || true)"
+
+              # Wenn GitHub keine .content liefert, gibt es kein Backup → skip restore
+              content="$(echo "$json" | jq -r '.content // empty' 2>/dev/null || true)"
+              if [ -z "$content" ]; then
+                echo "No backup found in GitHub -> starting with empty database (skip restore)."
+                exit 0
+              fi
+
+              # Backup in initdb.d legen: Postgres-Image importiert das automatisch beim ersten Init
+              echo "$content" | tr -d '\n' | base64 -d \
+                > /docker-entrypoint-initdb.d/restore.sql.gz
+              echo "Backup written to /docker-entrypoint-initdb.d/restore.sql.gz"
+
+              # Restore-Skript, damit Import sauber fehlschlägt, falls SQL Fehler enthält
+              cat > /docker-entrypoint-initdb.d/01-restore.sh <<'EOF'
+              #!/bin/sh
+              set -euo pipefail
+
+              echo "Running restore script..."
+              test -s /docker-entrypoint-initdb.d/restore.sql.gz
+
+              gunzip -c /docker-entrypoint-initdb.d/restore.sql.gz | \
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${POSTGRES_DB}"
+
+              echo "Restore completed successfully."
+              EOF
+              chmod +x /docker-entrypoint-initdb.d/01-restore.sh
+
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+            # init-scripts shared volume zwischen initContainer & Postgres Container
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
       containers:
         - name: postgres
           image: postgres:16
           ports:
             - containerPort: 5432
+              name: postgres
+          # Postgres Credentials werden aus dem postgres-secret geladen
           envFrom:
             - secretRef:
                 name: postgres-secret
           volumeMounts:
             - name: pgdata
               mountPath: /var/lib/postgresql/data
+            #init-scripts Mount nötig, damit restore.sql.gz / restore.sh sichtbar ist
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
           livenessProbe:
             tcpSocket:
               port: 5432
@@ -34,6 +116,11 @@ spec:
               port: 5432
             initialDelaySeconds: 5
             periodSeconds: 5
+      # init-scripts als volume, nur für die Init-Phase/Restore-Skripte
+      volumes:
+        - name: init-scripts
+          emptyDir: {}
+  # persistent volume (PGDATA)
   volumeClaimTemplates:
     - metadata:
         name: pgdata
@@ -42,3 +129,4 @@ spec:
         resources:
           requests:
             storage: 10Gi
+
