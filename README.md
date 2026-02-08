@@ -14,6 +14,7 @@ This project aims to implement the open source version control software redmine 
 - terraform
 - git
 - bash
+- k6 (for load testing)
 
 ### Installing
 
@@ -57,7 +58,16 @@ TODO
 
 ### Load testing
 
-TODO
+For load testing follow these steps:
+
+1. Run in root directroy of the project:
+    Linux: BASE_URL=http://<CONTROL_PLANE_FLOATING_IP> k6 run loadtest/k6/redmine.js
+    Windows: set BASE_URL=http://<CONTROL_PLANE_FLOATING_IP>
+             k6 run loadtest\k6\redmine.js
+
+2. Watch on the control plane:
+    sudo k3s kubectl -n redmine get pods -w
+    sudo k3s kubectl -n redmine get hpa -w
 
 ## Disclaimer
 
@@ -77,5 +87,5 @@ For help please contact finn-liam.wolf@informatik.hs-fulda.de
 ## Authors
 
 - Finn Wolf (finn-liam.wolf@informatik.hs-fulda.de)
-- Wilhelm Rassner
+- Wilhelm Rassner (wilhelm.rassner@informatik.hs-fulda.de)
 - Alan
