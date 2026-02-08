@@ -13,3 +13,4 @@ resources:
 # - redmine-nodeport.yaml
   - redmine-secret.yaml
   - postgres-backup-cronjob.yaml
+  - redmine-pdb.yaml
