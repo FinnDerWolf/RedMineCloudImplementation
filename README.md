@@ -4,7 +4,7 @@ This project is part of the lecture "cloud services" at Hochschule Fulda in wint
 
 ## Description
 
-This project aims to implement the open source version control software redmine as a high availability cloud service with automatic scaling and backups
+This project aims to implement the open source version control software redmine as a high availability cloud service with automatic scaling and backups.
 
 ## Getting Started
 
@@ -32,22 +32,50 @@ This project aims to implement the open source version control software redmine 
     - Save and close the buffer
 
 ### Executing program
+
 1. Connect to the Hochschule Fulda Network using "eduVPN"
     - Help: https://doku.rz.hs-fulda.de/doku.php/docs:eduvpn
 2. Using bash in the root of the repo, execute the following commands:
-    - chmod +x launch.sh
-    - ./launch.sh
+    - chmod +x deploy.sh
+    - ./deploy.sh
     - If demanded, confirm all ssh fingerprints by typing "yes"
 3. When finished, destroy the OpenStack infrastructure by executing the following commands:
     - cd terraform
     - terraform destroy
+    - When demanded confirm destruction with "yes"
+
+## Functionality
+
+### Reachable Endpoints
+
+1. Redmine is running on port 80
+2. Grafana dashboard is running on port 3000
+
+### Auto scaling, healing and backups
+
+TODO
+
+### Load testing
+
+TODO
+
+## Disclaimer
+
+This codebase is **not** production safe, as it disables several warnings regarding among others ssh and prints the password for the grafana admin panel when deployed 
 
 ## Help
 
 For help please contact finn-liam.wolf@informatik.hs-fulda.de
 
+## Acknowlegment
+
+- The great ressources from our lecture by Prof. Rieger
+- To aid with coding and research, the following AI tools were used:
+    - GitHub Copilot
+    - ChatGPT
+
 ## Authors
 
 - Finn Wolf (finn-liam.wolf@informatik.hs-fulda.de)
-- Wilhelm
+- Wilhelm Rassner
 - Alan
