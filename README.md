@@ -117,7 +117,7 @@ For help please contact finn-liam.wolf@informatik.hs-fulda.de
 
 ## Acknowlegment
 
-- The great ressources from our lecture by Prof. Rieger
+- The great ressources from our lecture by Prof. Rieger and teaching assistant Faizan Anwar
 - To aid with coding and research, the following AI tools were used:
     - GitHub Copilot
     - ChatGPT
