@@ -52,20 +52,54 @@ This project aims to implement the open source version control software redmine 
 1. Redmine is running on port 80
 2. Grafana dashboard is running on port 3000
 
-### Auto scaling, healing and backups
+### Cluster Health, Ingress, Storage, healing and backups
 
-TODO
+1. Cluster Health and High Availability
+            
+        sudo k3s kubectl get nodes -o wide
 
-### Load testing
+2. All Components working
+
+        sudo k3s kubectl get pods -A -o wide
+
+3. Ingress and external access
+
+        sudo k3s kubectl get ingress -A
+        sudo k3s kubectl describe ingress redmine -n redmine
+
+4. PVC
+
+        sudo k3s kubectl -n redmine get pvc
+
+5. Self-Healing
+   
+        sudo k3s kubectl -n redmine get pods
+        sudo k3s kubectl -n redmine delete pod <POD_NAME>
+
+        sudo k3s kubectl -n redmine get pods -w
+
+6. Pod disruption Budget
+
+        sudo k3s kubectl -n redmine get pdb
+        sudo k3s kubectl -n redmine describe pdb redmine-pdb
+
+7. Persistence
+
+        sudo k3s kubectl -n redmine rollout restart deployment redmine
+
+### Load testing and Auto scaling
 
 For load testing follow these steps:
 
 1. Run in root directroy of the project:
    
-    Linux: BASE_URL=http://<CONTROL_PLANE_FLOATING_IP> k6 run loadtest/k6/redmine.js
+    - Linux: 
+                    BASE_URL=http://<CONTROL_PLANE_FLOATING_IP> k6 run loadtest/k6/redmine.js
 
-    Windows: set BASE_URL=http://<CONTROL_PLANE_FLOATING_IP>
-             k6 run loadtest\k6\redmine.js
+    - Windows: 
+            
+            set BASE_URL=http://<CONTROL_PLANE_FLOATING_IP>
+            k6 run loadtest\k6\redmine.js
 
 2. Watch on the control plane:
    
