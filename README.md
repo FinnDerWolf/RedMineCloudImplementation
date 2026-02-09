@@ -52,7 +52,9 @@ This project aims to implement the open source version control software redmine 
 1. Redmine is running on port 80
 2. Grafana dashboard is running on port 3000
 
-### Cluster Health, Ingress, Storage, healing and backups
+### Test Cluster Health, Ingress, Storage, healing and backups
+
+The following commands must be run on the control Plane using ssh (ssh ubuntu@<CONTROL_PLANE_FLOATING_IP>) to test these services
 
 1. Cluster Health and High Availability
             
