@@ -18,11 +18,11 @@ spec:
           averageUtilization: 70
 
 # for the purpose of the demo scaleDown is accelerated
-behavior:
-  scaleDown:
-    stabilizationWindowSeconds: 0
-    selectPolicy: Max
-    policies:
-      - type: Pods
-        value: 2
-        periodSeconds: 15
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 0
+      selectPolicy: Max
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 15
