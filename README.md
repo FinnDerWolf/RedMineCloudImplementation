@@ -10,8 +10,9 @@ This project aims to implement the open source version control software redmine 
 
 ### Dependencies
 
-- eduVPN
-- terraform
+- eduVPN (for OpenStack connection)
+- terraform (for deployment script)
+- kubectl (for deployment script)
 - git
 - bash
 - k6 (for load testing)
