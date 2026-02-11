@@ -33,7 +33,7 @@ resource "openstack_compute_instance_v2" "vm" {
   count       = var.instance_count
   name        = "${var.name_prefix}-${count.index}"
   flavor_name = var.flavor
-  key_pair = var.keypair_name
+  key_pair    = var.keypair_name
 
   network {
     port = openstack_networking_port_v2.port[count.index].id

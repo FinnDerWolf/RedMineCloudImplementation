@@ -14,7 +14,7 @@ provider "openstack" {
   password    = var.password
   region      = var.region
 
-  insecure    = true
+  insecure = true
 }
 
 module "network" {
@@ -30,23 +30,23 @@ module "network" {
 module "security_k8s_internal" {
   source        = "./modules/security"
   sg_name       = "k8s-internal-sg"
-  allowed_ports = [22]              # intern SSH (für Jump + Admin)
-  remote_cidr   = var.subnet_cidr   # nur aus dem privaten Subnetz
-  providers = { openstack = openstack }
+  allowed_ports = [22]            # intern SSH (für Jump + Admin)
+  remote_cidr   = var.subnet_cidr # nur aus dem privaten Subnetz
+  providers     = { openstack = openstack }
 }
 
 module "security_controlplane_public" {
   source        = "./modules/security"
   sg_name       = "k8s-controlplane-public-sg"
-  allowed_ports = [22, 80, 443, 3000, 6443]  # SSH + HTTP/S + Grafana + Kubernetes API 
+  allowed_ports = [22, 80, 443, 3000, 6443] # SSH + HTTP/S + Grafana + Kubernetes API 
   remote_cidr   = var.uni_vpn_cidr
-  providers = { openstack = openstack }
+  providers     = { openstack = openstack }
 }
 
 resource "openstack_networking_secgroup_rule_v2" "k8s_internal_allow_all_ingress" {
   direction         = "ingress"
   ethertype         = "IPv4"
-  protocol          = null              # null = any protocol
+  protocol          = null # null = any protocol
   remote_ip_prefix  = var.subnet_cidr
   security_group_id = module.security_k8s_internal.sg_id
 }
@@ -54,15 +54,15 @@ resource "openstack_networking_secgroup_rule_v2" "k8s_internal_allow_all_ingress
 module "control_plane" {
   source = "./modules/compute"
 
-  instance_count      = 1
-  name_prefix         = "k8s-control"
-  image_id            = var.image_id
-  flavor              = var.server_flavor
-  volume_size         = var.server_volume_size
-  network_id = module.network.network_id
-  subnet_id  = module.network.subnet_id
-  keypair_name = openstack_compute_keypair_v2.k8s.name
-  security_group_ids  = [
+  instance_count = 1
+  name_prefix    = "k8s-control"
+  image_id       = var.image_id
+  flavor         = var.server_flavor
+  volume_size    = var.server_volume_size
+  network_id     = module.network.network_id
+  subnet_id      = module.network.subnet_id
+  keypair_name   = openstack_compute_keypair_v2.k8s.name
+  security_group_ids = [
     module.security_k8s_internal.sg_id,
     module.security_controlplane_public.sg_id
   ]
@@ -71,15 +71,15 @@ module "control_plane" {
 module "workers" {
   source = "./modules/compute"
 
-  instance_count      = 3
-  name_prefix         = "k8s-worker"
-  image_id            = var.image_id
-  flavor              = var.worker_flavor
-  volume_size         = var.worker_volume_size
-  network_id = module.network.network_id
-  subnet_id  = module.network.subnet_id
-  keypair_name = openstack_compute_keypair_v2.k8s.name
-  security_group_ids  = [module.security_k8s_internal.sg_id]
+  instance_count     = 3
+  name_prefix        = "k8s-worker"
+  image_id           = var.image_id
+  flavor             = var.worker_flavor
+  volume_size        = var.worker_volume_size
+  network_id         = module.network.network_id
+  subnet_id          = module.network.subnet_id
+  keypair_name       = openstack_compute_keypair_v2.k8s.name
+  security_group_ids = [module.security_k8s_internal.sg_id]
 }
 
 resource "openstack_networking_router_interface_v2" "router_if" {
