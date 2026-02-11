@@ -2,7 +2,7 @@ name: CI - Build, Test, Push
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
 
 permissions:
@@ -41,23 +41,17 @@ jobs:
       - name: Start stack (compose)
         run: |
           docker compose -f Docker/docker-compose.yaml up -d
-
+      - name: Integration tests (Redmine)
+        run: |
+          chmod +x tests/integration_test.sh
+          ./tests/integration_test.sh
+  
       # Health check
       - name: Health check Redmine
+        if: failure()
         run: |
-          set -e
-          # Try up to ~60s
-          for i in {1..30}; do
-            if curl -fsS http://localhost:3001/ > /dev/null; then
-              echo "Redmine is up"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Redmine did not become ready in time"
           docker compose -f Docker/docker-compose.yaml ps
-          docker compose -f Docker/docker-compose.yaml logs --no-color
-          exit 1
+          docker compose -f Docker/docker-compose.yaml logs --no-color --tail=200
 
       - name: Shutdown
         if: always()
