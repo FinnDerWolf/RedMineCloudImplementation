@@ -36,7 +36,8 @@ jobs:
 
       - name: Terraform validate
         run: terraform validate
-
+      - name: Terraform fmt 
+        run: terraform fmt -check -recursive
       - name: Terraform tests (terraform test)
         run: terraform test  
         
