@@ -3,6 +3,7 @@ set -euo pipefail
 
 MAX_WAIT_SECONDS="${MAX_WAIT_SECONDS:-180}"
 
+#Check Redmine instance
 check_instance() {
   BASE_URL="$1"
 
@@ -36,7 +37,33 @@ check_instance() {
   echo ""
 }
 
-# Test both instances
+#Check Postgres DB
+check_database() {
+
+  echo "==> Waiting for Postgres DB..."
+
+  end=$((SECONDS + MAX_WAIT_SECONDS))
+  until docker compose -f Docker/docker-compose.yaml exec -T db pg_isready -U redmine >/dev/null 2>&1; do
+    if (( SECONDS >= end )); then
+      echo "ERROR: Postgres did not become ready"
+      exit 1
+    fi
+    sleep 2
+  done
+
+  echo "==> Postgres is ready"
+
+  echo "==> Running SQL test query..."
+
+  docker compose -f Docker/docker-compose.yaml exec -T db \
+    psql -U redmine -d redmine -c "SELECT 1;" >/dev/null
+
+  echo "Database query successful"
+  echo ""
+}
+
+# Test instances
+check_database
 check_instance "http://localhost:3001"
 check_instance "http://localhost:3002"
 
