@@ -14,6 +14,35 @@ concurrency:
   cancel-in-progress: true # CI always works on the latest code only
 
 jobs:
+  terraform:
+    name: Terraform fmt/validate/test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+
+      - name: Terraform fmt (check)
+        run: terraform fmt -check -recursive
+
+      # backend=false avoids CI needing your remote backend credentials.
+      - name: Terraform init 
+        run: terraform init -input=false -backend=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform tests (terraform test)
+        run: terraform test  
+        
   build-test:
     runs-on: ubuntu-latest
     steps:
