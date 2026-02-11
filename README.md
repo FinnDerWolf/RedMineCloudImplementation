@@ -88,7 +88,27 @@ The following commands must be run on the control Plane using ssh (ssh ubuntu@<C
 
 7. Persistence
 
-        sudo k3s kubectl -n redmine rollout restart deployment redmine
+        sudo kubectl -n redmine delete pod postgres-0
+        sudo kubectl -n redmine get pod postgres-0 -w
+
+8. Manual backup
+
+        sudo kubectl -n redmine create job \ 
+        --from=cronjob/postgres-backup-to-github \ 
+        postgres-backup-manual
+
+9. Delete Databse and restore
+
+        sudo kubectl -n redmine scale statefulset postgres --replicas=0
+        sudo kubectl -n redmine get pods
+        sudo kubectl -n redmine delete pvc pgdata-postgres-0
+        sudo kubectl -n redmine scale statefulset postgres --replicas=1
+        sudo kubectl -n redmine get pod postgres-0 -w
+
+        sudo kubectl -n redmine logs postgres-0 -c restore-from-github
+
+
+
 
 ### Load testing and Auto scaling
 
