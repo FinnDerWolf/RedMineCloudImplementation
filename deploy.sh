@@ -120,21 +120,19 @@ ls -l
 
 chmod +x k8s2/scripts/deploy-from-git.sh
 
-# Secret anlegen/ersetzen, BEVOR Workloads (Postgres/CronJob) deployed werden.
-# initContainer im Postgres-Pod braucht github-token, um Backup zu laden
-# CronJob braucht github-token, um Backup hochzuladen
-# Ohne Secret kann es zu Init-Errors oder Job-Fails kommen
+echo "Ensuring github-token secret exists in namespace redmine..."
+sudo k3s kubectl create namespace redmine >/dev/null 2>&1 || true
 
-if [ -n "$GH_TOKEN" ]; then
-  echo "Creating/updating github-token secret in namespace redmine..."
-  sudo k3s kubectl create namespace redmine >/dev/null 2>&1 || true
-
-  sudo k3s kubectl -n redmine delete secret github-token --ignore-not-found >/dev/null 2>&1 || true
-  sudo k3s kubectl -n redmine create secret generic github-token \
-    --from-literal=token="$GH_TOKEN"
-else
-  echo "No GH token provided -> github-token secret NOT created (backup/restore disabled)."
+# Wenn kein Token eingegeben wurde, Dummy setzen
+if [ -z "${GH_TOKEN:-}" ]; then
+  echo "WARN: No GitHub token provided -> creating dummy github-token secret (backup/restore disabled)."
+  GH_TOKEN="DUMMY"
 fi
+
+# Secret immer anlegen/aktualisieren (idempotent)
+sudo k3s kubectl -n redmine create secret generic github-token \
+  --from-literal=token="$GH_TOKEN" \
+  --dry-run=client -o yaml | sudo k3s kubectl apply -f -
 
 export OVERLAY=production
 ./k8s2/scripts/deploy-from-git.sh

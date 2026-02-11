@@ -39,6 +39,11 @@ spec:
             - |
               apk add --no-cache curl ca-certificates jq
 
+              if [ "${GITHUB_TOKEN:-}" = "DUMMY" ]; then
+                echo "GITHUB_TOKEN is DUMMY -> skipping restore."
+                exit 0
+              fi
+
               # Wenn Postgres-Datenverzeichnis bereits initialisiert ist,
               # nicht restoren (Schutz vor Überschreiben).
               if [ -f /var/lib/postgresql/data/PG_VERSION ]; then

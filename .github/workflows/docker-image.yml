@@ -1,36 +1,118 @@
-name: CI - Build & Test
+name: CI - Build, Test, Push
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+# One CI run per branch at a time  
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true # CI always works on the latest code only
 
 jobs:
-  build-and-test:
+  build-test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker images
-        run: docker compose -f Docker/docker-compose.yaml build
+      # Caching via GitHub
+      - name: Docker build cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          # If there is no exact cache for this commit, 
+          # try to restore the most recent cache that starts with this prefix.
+          restore-keys: |
+            ${{ runner.os }}-buildx-   
 
-      - name: Start containers
-        run: docker compose -f Docker/docker-compose.yaml up -d
-
-      - name: Wait for services
-        run: sleep 15
-
-      - name: Run tests
+      - name: Build images (compose)
         run: |
-          docker ps
-          docker compose -f Docker/docker-compose.yaml ps
+          docker compose -f Docker/docker-compose.yaml build
 
-      - name: Stop containers
+      - name: Start stack (compose)
+        run: |
+          docker compose -f Docker/docker-compose.yaml up -d
+
+      # Health check
+      - name: Health check Redmine
+        run: |
+          set -e
+          # Try up to ~60s
+          for i in {1..30}; do
+            if curl -fsS http://localhost:3001/ > /dev/null; then
+              echo "Redmine is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Redmine did not become ready in time"
+          docker compose -f Docker/docker-compose.yaml ps
+          docker compose -f Docker/docker-compose.yaml logs --no-color
+          exit 1
+
+      - name: Shutdown
         if: always()
-        run: docker compose -f Docker/docker-compose.yaml down
+        run: |
+          docker compose -f Docker/docker-compose.yaml down -v
+
+  push:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Define tags
+        id: meta
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "CHANNEL=prod" >> $GITHUB_OUTPUT
+          else
+            echo "CHANNEL=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build & push redmine image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Docker/redmine
+          file: ./Docker/redmine/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/redmine:${{ steps.meta.outputs.CHANNEL }}-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/redmine:${{ steps.meta.outputs.CHANNEL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push db image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Docker/db
+          file: ./Docker/db/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/redmine-db:${{ steps.meta.outputs.CHANNEL }}-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/redmine-db:${{ steps.meta.outputs.CHANNEL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
