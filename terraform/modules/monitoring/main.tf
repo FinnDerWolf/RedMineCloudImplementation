@@ -52,9 +52,25 @@ resource "helm_release" "kube_prometheus_stack" {
 
   create_namespace = false
 
-  #values = [
-  #  file("${path.module}/values.yaml")
-  #]
+  values = [yamlencode({
+    grafana = {
+      sidecar = {
+        dashboards = {
+          enabled = true
+          label   = "grafana_dashboard"
+          folder  = "/var/lib/grafana/dashboards"
+        }
+      }
+
+      defaultDashboardsEnabled = true
+      
+      "grafana.ini" = {
+          dashboards = {
+            default_home_dashboard_path = "/var/lib/grafana/dashboards/cluster_overview.json"
+          }
+        }
+    }
+  })]
 
   depends_on = [
     kubernetes_namespace.monitoring
