@@ -43,8 +43,8 @@ jobs:
           docker compose -f Docker/docker-compose.yaml up -d
       - name: Integration tests (Redmine)
         run: |
-          chmod +x ./tests/integration_test.sh
-          ./tests/integration_test.sh
+          chmod +x ./Tests/integration_test.sh
+          ./Tests/integration_test.sh
   
       # Health check
       - name: Health check Redmine
