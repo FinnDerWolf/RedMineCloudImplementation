@@ -147,4 +147,4 @@ For help please contact finn-liam.wolf@informatik.hs-fulda.de
 
 - Finn Wolf (finn-liam.wolf@informatik.hs-fulda.de)
 - Wilhelm Rassner (wilhelm.rassner@informatik.hs-fulda.de)
-- Alan
+- Alan Mohammad (alan.mohammad@informatik.hs-fulda.de)
