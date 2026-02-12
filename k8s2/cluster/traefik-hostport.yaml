@@ -18,6 +18,9 @@ spec:
       grafana:
         port: 3000
         hostPort: 3000
+      argocd:
+        port: 6060
+        hostPort: 6060
       
 
     service:

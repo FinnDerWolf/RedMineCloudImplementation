@@ -6,6 +6,8 @@ metadata:
   namespace: argocd
   annotations:
     kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: argocd
+
 spec:
   rules:
       http:
