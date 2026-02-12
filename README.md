@@ -93,9 +93,7 @@ The following commands must be run on the control Plane using ssh (ssh ubuntu@<C
 
 8. Manual backup
 
-        sudo kubectl -n redmine create job \ 
-        --from=cronjob/postgres-backup-to-github \ 
-        postgres-backup-manual
+        sudo kubectl -n redmine create job --from=cronjob/postgres-backup-to-github postgres-backup-manual
 
 9. Delete Databse and restore
 
