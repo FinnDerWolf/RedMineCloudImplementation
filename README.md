@@ -107,8 +107,8 @@ The following commands must be run on the control Plane using ssh (ssh ubuntu@<C
 
 ### Backup Github setup
 
-
-
+You need a private Github Repository with a folder named "backup" and a Github token.
+Insert your needed user and repo information in /k8s2/apps/redmine/base/postgres-statefulset.yaml
 
 ### Load testing and Auto scaling
 
