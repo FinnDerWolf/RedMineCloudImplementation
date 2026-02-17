@@ -1,3 +1,4 @@
+// einfaches loadtest script, das 3 Minuten auf die login zugreift
 import http from "k6/http";
 import { sleep } from "k6";
 

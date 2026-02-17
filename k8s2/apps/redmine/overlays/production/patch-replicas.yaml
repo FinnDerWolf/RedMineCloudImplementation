@@ -1,3 +1,4 @@
+# zum start des deployments werden 2 Pods gestartet
 apiVersion: apps/v1
 kind: Deployment
 metadata:

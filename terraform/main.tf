@@ -7,6 +7,7 @@ terraform {
   }
 }
 
+# OpenStack-Zugangsdaten als Variablen
 provider "openstack" {
   auth_url    = var.auth_url
   tenant_name = var.project
@@ -14,6 +15,7 @@ provider "openstack" {
   password    = var.password
   region      = var.region
 
+  # Für Produktion besser: korrektes CA-Zertifikat konfigurieren
   insecure    = true
 }
 
@@ -26,7 +28,8 @@ module "network" {
   providers = { openstack = openstack }
 }
 
-
+# Interner Security Group: nur SSH aus dem privaten Subnetz.
+# Verbesserungsidee: SSH weiter einschränken (z.B. nur Jump-Host-IP statt ganzes Subnetz).
 module "security_k8s_internal" {
   source        = "./modules/security"
   sg_name       = "k8s-internal-sg"
@@ -43,6 +46,10 @@ module "security_controlplane_public" {
   providers = { openstack = openstack }
 }
 
+# Zusätzliche Regel: erlaubt allen Ingress-Traffic innerhalb des privaten Netzes.
+# vereinfacht Cluster-internen Verkehr, ist aber relativ permissiv.
+# Verbesserungsidee: nur benötigte Protokolle/Ports freigeben oder separate SGs
+# für Node-to-Node und Service-Traffic verwenden.
 resource "openstack_networking_secgroup_rule_v2" "k8s_internal_allow_all_ingress" {
   direction         = "ingress"
   ethertype         = "IPv4"
@@ -51,6 +58,7 @@ resource "openstack_networking_secgroup_rule_v2" "k8s_internal_allow_all_ingress
   security_group_id = module.security_k8s_internal.sg_id
 }
 
+# Control-Plane. Hier 1 Instanz.
 module "control_plane" {
   source = "./modules/compute"
 
@@ -68,6 +76,7 @@ module "control_plane" {
   ]
 }
 
+# Worker Nodes (hier 3 Instanzen). Nur intern erreichbar.
 module "workers" {
   source = "./modules/compute"
 
@@ -82,6 +91,7 @@ module "workers" {
   security_group_ids  = [module.security_k8s_internal.sg_id]
 }
 
+# Verbindet das private Subnetz mit dem bestehenden Router.
 resource "openstack_networking_router_interface_v2" "router_if" {
   router_id = var.existing_router_id
   subnet_id = module.network.subnet_id
@@ -95,6 +105,9 @@ resource "openstack_networking_floatingip_v2" "control_fip" {
   pool = data.openstack_networking_network_v2.external.name
 }
 
+# Verknüpft Floating IP mit dem Port der ersten Control-Plane-Instanz.
+# Hinweis: bei >1 Control-Plane Nodes bräuchte man entweder Load Balancer
+# oder mehrere Floating IPs.
 resource "openstack_networking_floatingip_associate_v2" "control_fip_assoc" {
   floating_ip = openstack_networking_floatingip_v2.control_fip.address
   port_id     = module.control_plane.port_ids[0]
@@ -102,6 +115,7 @@ resource "openstack_networking_floatingip_associate_v2" "control_fip_assoc" {
   depends_on = [openstack_networking_router_interface_v2.router_if]
 }
 
+# Importiert den lokalen Public Key als OpenStack Keypair für SSH-Zugriff.
 resource "openstack_compute_keypair_v2" "k8s" {
   name       = "uni-k8s-key"
   public_key = file(var.ssh_public_key_path)

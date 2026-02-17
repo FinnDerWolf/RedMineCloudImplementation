@@ -1,3 +1,5 @@
+# automatischer scaler der pods
+# pods werden auf bis zu 8 pods hochskaliert, wenn cpu-Auslastung über 70% liegt
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:

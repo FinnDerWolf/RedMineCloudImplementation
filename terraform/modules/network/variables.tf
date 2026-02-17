@@ -1,5 +1,12 @@
-variable "network_name" {}
-variable "subnet_cidr" {}
+variable "network_name" {
+  description = "Name des Neutron-Netzwerks"
+  type        = string
+}
+
+variable "subnet_cidr" {
+  description = "CIDR des Subnetzes"
+  type        = string
+}
 
 variable "dns_nameservers" {
   type        = list(string)

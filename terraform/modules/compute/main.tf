@@ -7,6 +7,7 @@ terraform {
   }
 }
 
+# Boot-Volume pro Instanz, erstellt aus dem angegebenen Image.
 resource "openstack_blockstorage_volume_v3" "volume" {
   count = var.instance_count
 

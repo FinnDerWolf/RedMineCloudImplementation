@@ -1,3 +1,5 @@
+# Redmine Deployment mit image namen und env's
+# in echter production natürlich echtes secret management
 apiVersion: apps/v1
 kind: Deployment
 metadata:

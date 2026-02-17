@@ -1,3 +1,5 @@
+# Pod Disruption Budget
+# es sollen immer mindestens 2 Pods available sein
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

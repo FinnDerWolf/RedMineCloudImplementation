@@ -105,6 +105,8 @@ The following commands must be run on the control Plane using ssh (ssh ubuntu@<C
 
         sudo kubectl -n redmine logs postgres-0 -c restore-from-github
 
+### Backup Github setup
+
 
 
 

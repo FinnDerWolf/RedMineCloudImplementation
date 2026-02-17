@@ -1,3 +1,5 @@
+# ursprüngliche Nodeport-Version zum testen
+# ist noch im Projekt, ist aber auch in kustomization.yaml auskommentiert
 apiVersion: v1
 kind: Service
 metadata:

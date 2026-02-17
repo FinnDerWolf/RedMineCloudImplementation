@@ -14,12 +14,20 @@ variable "image_id" {
   type = string
 }
 
-variable "worker_flavor" {}
-variable "server_flavor" {}
+variable "worker_flavor" {
+  type = string
+}
+variable "server_flavor" {
+  type = string
+}
 
 # Storage
-variable "worker_volume_size" {}
-variable "server_volume_size" {}
+variable "worker_volume_size" {
+  type = number
+}
+variable "server_volume_size" {
+  type = number
+}
 
 # Externes Netz (Floating IP Pool)
 variable "external_network_name" {
